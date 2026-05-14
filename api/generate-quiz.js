@@ -94,7 +94,7 @@ Provide ONLY the JSON output, without markdown blocks or any other text.
 
     // 4. Generate the quiz using Gemini 1.5 Flash (as requested)
     const response = await ai.models.generateContent({
-      model: 'gemini-2.0-flash',
+      model: 'gemini-2.5-flash',
       contents: prompt,
       config: {
         responseMimeType: "application/json",
