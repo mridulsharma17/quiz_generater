@@ -47,17 +47,22 @@ export default async function handler(req, res) {
     await runMiddleware(req, res, upload);
 
     const file = req.file;
-    const { difficulty, numQuestions, topics } = req.body;
+    const { difficulty, numQuestions, topics, textContent } = req.body;
 
-    if (!file) {
-      return res.status(400).json({ error: 'No file uploaded' });
+    if (!file && (!textContent || textContent.trim() === '')) {
+      return res.status(400).json({ error: 'Please upload a document or enter some text' });
     }
 
-    // 2. Parse the document (PDF, DOCX, TXT)
-    const extractedText = await parseDocument(file);
+    // 2. Parse the document (PDF, DOCX, TXT) or use direct text content
+    let extractedText = '';
+    if (file) {
+      extractedText = await parseDocument(file);
+    } else {
+      extractedText = textContent;
+    }
 
     if (!extractedText || extractedText.trim() === '') {
-      return res.status(400).json({ error: 'Could not extract text from the document' });
+      return res.status(400).json({ error: 'Could not extract or retrieve text content' });
     }
 
     // 3. Setup Gemini API

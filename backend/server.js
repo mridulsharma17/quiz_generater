@@ -31,17 +31,22 @@ app.get('/api/health', (req, res) => {
 app.post('/api/generate-quiz', upload.single('document'), async (req, res) => {
   try {
     const file = req.file;
-    const { difficulty, numQuestions, topics } = req.body;
+    const { difficulty, numQuestions, topics, textContent } = req.body;
 
-    if (!file) {
-      return res.status(400).json({ error: 'No file uploaded' });
+    if (!file && (!textContent || textContent.trim() === '')) {
+      return res.status(400).json({ error: 'Please upload a document or enter some text' });
     }
 
-    // 1. Parse the document
-    const extractedText = await parseDocument(file);
+    // 1. Parse the document or use direct text content
+    let extractedText = '';
+    if (file) {
+      extractedText = await parseDocument(file);
+    } else {
+      extractedText = textContent;
+    }
     
     if (!extractedText || extractedText.trim() === '') {
-      return res.status(400).json({ error: 'Could not extract text from the document' });
+      return res.status(400).json({ error: 'Could not extract or retrieve text content' });
     }
 
     // 2. Generate the quiz using AI
@@ -60,6 +65,10 @@ app.post('/api/generate-quiz', upload.single('document'), async (req, res) => {
     console.error('Error in /api/generate-quiz:', error);
     res.status(500).json({ error: error.message || 'Internal server error' });
   }
+});
+
+app.listen(port, () => {
+  console.log(`Backend server running on port ${port}`);
 });
 
 export default app;
